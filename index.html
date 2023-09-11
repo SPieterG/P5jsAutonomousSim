@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>Formula Student Autonomous Simulator - Sjoerd Groot</title>
+    <!-- <script src="p5.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.5.0/lib/p5.min.js"></script>
+
+    <script src="globals.js"></script>
+    <script src="cone.js"></script>
+    <script src="coneMap.js"></script>
+    <script src="carModel.js"></script>
+    <script src="autonomousController.js"></script>
+    <script src="manualController.js"></script>
+    <script src="skidpadPredictor.js"></script>
+    <script src="ui.js"></script>
+    <script src="worldManager.js"></script>
+    <script src="controllerOptimizer.js"></script>
+    <script src="sketch.js"></script>
+
+    <style>
+      body{
+        margin: 0;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="sketch-holder"></div>
+
+
+  </body>
+  <script>
+    (function () {
+      var blockContextMenu, myElement;
+
+      blockContextMenu = function (evt) {
+        evt.preventDefault();
+      };
+
+      myElement = document.getElementById("sketch-holder");
+      myElement.addEventListener('contextmenu', blockContextMenu);
+    })();
+  </script>
+</html>

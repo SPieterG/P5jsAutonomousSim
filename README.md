@@ -2,7 +2,7 @@
 # Interactive Autonomous Simulator
 
 This project is ment to provide a playground in which to interactifly play around with Autonomous Formula Student cars. To see and get a feel for how diffrent situations and algorithms might infulence the stability and performance of the car. 
-The javascript library [P5JS](https://p5js.org/) is used for rendering the visualizations as its quick to iterate and debug with and made it simple enough to get the project running in an evening.
+The javascript library [P5JS](https://p5js.org/) is used for rendering the visualizations as its quick to iterate and debug with and made it simple enough to get the project running in an evening. The resulting webpage can be explored at https://spieterg.github.io/P5jsAutonomousSim/.
 
 ![screenshot](Screenshot_2023-09-11.png "screenshot")
 
@@ -21,7 +21,7 @@ Following features have been implemented / are still to be implemented. Current 
 - [x] Multi car support
 - [x] Simulating steering latancy
 - [ ] Interface for initializing cars and their parameters 
-- [ ] Interface for selecting whats displayed on the graphs (rn just edit graph1object & key in ui.js)
+- [x] Interface for selecting whats displayed on the graphs
 - [x] simulating a full skidpad run offscreen and recording the loss determined by distance from the center line and rate of turn of the steering wheel
 - [ ] Performing an offline gridsearch over controller parameters
 - [ ] Visualzing the controller performance over the parameter space with some 2d graphs containing coloured dots

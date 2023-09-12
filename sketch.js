@@ -12,11 +12,11 @@ function setup() {
 
   let car2 = new Car(50 * 100 / 1000, [50, 200, 50]);
   autonomousCars.push(new AutonomousCar(
-    car2, new AutonomousController(car2, 20, 2, 4, 0, 50 / 1000)))
+    car2, new AutonomousController(car2, 20, 2.5, 4, 0, 50 / 1000)))
 
   let car3 = new Car(50 * 100 / 1000, [250, 50, 50]);
   autonomousCars.push(new AutonomousCar(
-    car3, new AutonomousController(car3, 20, 2, 4, 0, 100 / 1000)))
+    car3, new AutonomousController(car3, 20, 2.5, 4, 0, 100 / 1000)))
 
   // // Uncomment to add manual car
   // let car4 = new Car(100 * 120 / 1000, [100, 100, 100]);
@@ -75,7 +75,7 @@ function keyReleased() {
 }
 
 function mousePressed() {
-  simulating = !simulating;
+  // simulating = !simulating;
 
   for (let mh of mouseListeners)
     mh.mousePressed();
@@ -89,4 +89,9 @@ function mouseReleased() {
 function mouseWheel(event) {
   for (let mh of mouseListeners)
     mh.mouseWheel(event);
+}
+
+// dynamically adjust the canvas to the window
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }

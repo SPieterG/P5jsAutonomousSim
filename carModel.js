@@ -21,7 +21,7 @@ class Car {
       this.CdA = 2;
       this.tireRadius = 0.179256;
       this.cog = 0.489; // cog percenage from the front (0 is all the way to the front, 1 all the way to the back)
-      this.maxStearingAngle = 0.2;
+      this.maxStearingAngle = 0;
       this.maxStearingAngleFull = 0.2;
       this.maxStearingAngleZero = 0.2;
   
@@ -48,7 +48,8 @@ class Car {
 
       this.maxStearingAngle = this.maxStearingAngleFull + this.maxStearingAngleZero * max(1 - this.velocity.x / 30, 0);
 
-      this.positionHistory.push(this.pos.copy());
+      if(this.positionHistory.length < 1 || this.positionHistory[this.positionHistory.length - 1].dist(this.pos) > 0.5)
+        this.positionHistory.push(this.pos.copy());
   
       // Forward the steering delay
       if (this.steeringDelaySteps > 0) {

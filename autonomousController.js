@@ -40,7 +40,7 @@ let SkidpadStage = {
         this.worldAngle += 2 * PI;
       }
   
-      this.updateStateProgress();
+      this.updateStateProgress(dt);
   
       // Go to tarkget speed during skidpad with fuzzy logic
       if (this.stage !== SkidpadStage.STOPPING) {
@@ -62,7 +62,7 @@ let SkidpadStage = {
       this.lookaheadpoint = this.calculateLookaheadPoint(this.lookaheadDistance);
       let lookaheaddriection = this.lookaheadpoint.copy().sub(this.expectedCarPos);
       let steeringP = -lookaheaddriection.cross(this.controlledCar.heading).z * this.steeringGain;
-      let d = max(min((steeringP - this.oldSteeringP) / dt, 0.1), -0.1);
+      let d = max(min((steeringP - this.oldSteeringP) / dt, 0.2), -0.2);
       this.oldSteeringP = steeringP;
 
       this.stearingAngle = (steeringP + d * this.dGain) / (this.veltot + 1);
@@ -123,14 +123,16 @@ let SkidpadStage = {
       return this.path[this.path.length - 1];
     }
   
-    updateStateProgress() {
+    updateStateProgress(dt = 1/100) {
       for (let i = this.pathPosition; i < this.path.length - 1; i++) {
         let currentPoint = this.path[i];
         let nextPoint = this.path[i + 1];
         let lineDirection = p5.Vector.sub(nextPoint, currentPoint);
         let pointToLineStart = p5.Vector.sub(this.expectedCarPos, currentPoint);
         let t = pointToLineStart.dot(lineDirection) / lineDirection.mag();
-        this.deviationFromPath = pointToLineStart.dot(lineDirection.rotate(PI / 2)) / lineDirection.magSq();
+
+                                                                                                            // correction factor as the car will also be steering a bit, should work out the actual trig but by that point we might as well implement mpc
+        this.deviationFromPath = pointToLineStart.dot(lineDirection.rotate(PI / 2)) / lineDirection.magSq() + this.controlledCar.stearingAngle * this.veltot * dt * 10;
   
         if (t < 0) {
           this.pathPosition = i;

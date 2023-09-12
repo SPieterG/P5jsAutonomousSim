@@ -174,7 +174,7 @@ class Figure{
 class ControlPanel{
 
   constructor(){
-    this.show = true;
+    this.show = false;
 
     this.mousePressedThisFrame = false;
 
@@ -194,7 +194,6 @@ class ControlPanel{
       fill(255, 255, 255, 200);
       rect(0, 0, ui.controlPanelSplit, height);
   
-  
       let y = 100 - this.scrollDist;
       y = this.drawPauseButton(y);
       y = this.drawCarValues(y);
@@ -203,8 +202,6 @@ class ControlPanel{
     }
 
     this.drawHeader();
-
-
 
     this.mousePressedThisFrame = false;
   }
@@ -262,19 +259,25 @@ class ControlPanel{
     }
 
 
+    
 
     return y + 40;
   }
 
   drawCarValues(y){
+    if(autonomousCars.length == 0)
+      return y;
+
+
     noStroke();
 
     let i = 1;
     for(let car of autonomousCars){
+      // Car header
       textSize(20);
       y += 20;
       fill(car.car.carcolor[0], car.car.carcolor[1], car.car.carcolor[2]);
-      text("Car " + i + " :  " + car.controller.veltot.toFixed(2) + " [m/s]  " + (car.controller.progress * 100).toFixed(2) + "%", 40, y);
+      text("Car " + i + " :  " + car.controller.veltot.toFixed(2) + " [m/s]  " + (car.controller.stage == SkidpadStage.FINISH ? "Finish" : (car.controller.progress * 100).toFixed(2) + "%"), 40, y);
       i++;
       y += 20;
 
@@ -291,8 +294,86 @@ class ControlPanel{
 
       fill(0);
 
+
+      // Pause, reset and delete button
+      // reset button
+      if(this.mousePressedThisFrame && mouseIntersectsRect(40, y, 100, 20)){
+        car.reset();
+      }
+      textSize(12);
+      stroke(1);
+      fill(255, 0, 0);
+      rect(40, y, 100, 20);
+      fill(255);
+      noStroke();
+      text("Reset", 70, y + 15)
+
+      // paused button
+      if(this.mousePressedThisFrame && mouseIntersectsRect(150, y, 100, 20)){
+        car.paused = !car.paused;
+      }
+      
+      stroke(1);
+      if(car.paused){
+        fill(0, 255, 0);
+        rect(150, y, 100, 20);
+  
+        fill(0);
+        noStroke();
+        text("Resume", 180, y + 15)
+      } else{
+        fill(255, 0, 0);
+        rect(150, y, 100, 20);
+  
+        fill(255);
+        noStroke();
+        text("Pause", 180, y + 15)
+      }
+
+      // delete button
+      if(this.mousePressedThisFrame && mouseIntersectsRect(260, y, 100, 20)){
+        autonomousCars.splice(i-2, 1);
+        this.carVisibilities.splice(i-2, 1);
+        continue;
+      }
+      stroke(1);
+      fill(255, 0, 0);
+      rect(260, y, 100, 20);
+      fill(255);
+      noStroke();
+      text("Delete", 290, y + 15)
+      y += 40;
+
+      //draw button
+      if(this.mousePressedThisFrame && mouseIntersectsRect(40, y, 100, 20)){
+        car.controller.drawController = !car.controller.drawController;
+      }
+      stroke(1);
+      if(car.controller.drawController){
+        fill(0, 255, 0);
+        rect(40, y, 100, 20);
+  
+        fill(0);
+        noStroke();
+        text("Hide Controller", 50, y + 15)
+      } else{
+        fill(255, 0, 0);
+        rect(40, y, 100, 20);
+  
+        fill(255);
+        noStroke();
+        text("Draw Controller", 50, y + 15)
+      }
+
+      y += 40;
+
+
+
+
+      // Car values
       y += 5;
       textSize(18);
+      fill(0);
       text("Car values:", 40, y);
       y += 20;
       
@@ -326,7 +407,7 @@ class ControlPanel{
         }
       }
 
-
+      // Controller values
       y += 5;
       textSize(18);
       text("Controller values:", 40, y);  

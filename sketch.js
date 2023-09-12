@@ -56,8 +56,6 @@ function draw() {
   for (let c of autonomousCars) {
     c.draw();
   }
-  if(autonomousCars.length > 1)
-    autonomousCars[1].controller.draw();
 
   coneMap.draw();
 

@@ -1,9 +1,5 @@
 let SkidpadStage = {
     STARTING: 0,
-    RIGHT1: 1,
-    RIGHT2: 2,
-    LEFT1: 3,
-    LEFT2: 4,
     FINISH: 5,
     STOPPING: 6
   };
@@ -31,6 +27,20 @@ let SkidpadStage = {
       this.deviationIntegral = 0;
 
       this.oldSteeringP = 0;
+
+      this.drawController = false;
+    }
+
+    reset(){
+      this.stage = SkidpadStage.STARTING;
+      this.progress = 0;
+      this.pathPosition = 0;
+      this.deviationFromPath = 0;
+      this.deviationIntegral = 0;
+      this.oldSteeringP = 0;
+      this.lookaheadpoint = createVector(0, 0);
+      this.expectedCarPos = createVector(0, 0);
+
     }
   
     update(dt) {
@@ -42,8 +52,8 @@ let SkidpadStage = {
   
       this.updateStateProgress(dt);
   
-      // Go to tarkget speed during skidpad with fuzzy logic
-      if (this.stage !== SkidpadStage.STOPPING) {
+      // Go to traget speed during skidpad with fuzzy logic
+      if (this.stage !== SkidpadStage.STOPPING && this.stage !== SkidpadStage.FINISH) {
         if (this.veltot > this.speedTarget + 0.2)
           this.force = -100;
         else if (this.veltot < this.speedTarget)
@@ -72,6 +82,9 @@ let SkidpadStage = {
     }
   
     draw() {
+      if(!this.drawController)
+        return;
+
       noStroke();
       fill(250, 0, 0);
       circle(wm.tX(this.lookaheadpoint.x), wm.tY(this.lookaheadpoint.y), 30);
@@ -142,8 +155,11 @@ let SkidpadStage = {
   
       this.progress = this.pathPosition / this.path.length;
   
-      if (this.pathPosition + 60 >= this.path.length)
+      if (this.stage == SkidpadStage.STARTING && this.pathPosition + 60 >= this.path.length)
         this.stage = SkidpadStage.STOPPING;
+
+      if(this.stage == SkidpadStage.STOPPING && this.veltot < 0.1)
+        this.stage = SkidpadStage.FINISH;
     }
   
     getSkidpadPath(skdipadRadius = 9.125) {

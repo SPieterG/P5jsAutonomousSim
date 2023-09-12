@@ -25,19 +25,3 @@ class KeyHandler {
 let keyListeners = [];
 
 
-class AutonomousCar{
-  constructor(car, controller) {
-    this.car = car;
-    this.controller = controller;
-  }
-  
-  update(ts){
-    this.car.update(ts);
-    this.controller.update(ts);
-  }
-
-  draw(){
-    this.car.draw();
-    // this.controller.draw();
-  }
-}

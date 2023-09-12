@@ -1,6 +1,34 @@
+class AutonomousCar{
+  constructor(car, controller) {
+    this.car = car;
+    this.controller = controller;
+
+    this.paused = false;
+  }
+  
+  update(ts){
+    if(this.paused)
+      return;
+
+    this.car.update(ts);
+    this.controller.update(ts);
+  }
+
+  reset(){
+    this.car.reset();
+    this.controller.reset();
+  }
+
+  draw(){
+    this.car.draw();
+    this.controller.draw();
+  }
+}
+
+
 class Car {
-    // State variables
     constructor(newSteeringDelay, carcolor = [0, 0, 0]) {
+      // State variables
       this.acc = createVector();
       this.pos = createVector(0, 0);
       this.heading = p5.Vector.fromAngle(PI * 1.5 / 4 + 0.01);
@@ -29,6 +57,26 @@ class Car {
 
       this.steeringDelaySteps = newSteeringDelay;
   
+      this.positionHistory = [];
+
+      for (let i = 0; i < this.steeringDelaySteps; i++) {
+        this.stearingAngleDelay.push(this.stearingAngle);
+      }
+    }
+
+    reset(){
+      // State variables
+      this.acc = createVector();
+      this.pos = createVector(0, 0);
+      this.heading = p5.Vector.fromAngle(PI * 1.5 / 4 + 0.01);
+      this.velocity = createVector(0, 0);
+      this.gyro_z = 0;
+  
+      // Controlled values
+      this.stearingAngleDelay = [];
+      this.stearingAngle = 0; // Steering angle of the front wheels in rad
+      this.force = 0;
+
       this.positionHistory = [];
 
       for (let i = 0; i < this.steeringDelaySteps; i++) {

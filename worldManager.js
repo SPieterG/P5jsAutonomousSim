@@ -111,7 +111,7 @@ class WorldManager {
     mouseReleased() {}
   
     mouseWheel(event) {
-      if(mouseY > ui.graphSplit || mouseX < ui.controlPanelSplit)
+      if(mouseY > ui.graphSplit || (mouseX < ui.controlPanelSplit && ui.controlPanel.show))
         return;
 
       const zoomSpeed = 0.0005;

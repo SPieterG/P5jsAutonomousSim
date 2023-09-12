@@ -1,4 +1,7 @@
-
+console.log("Welcome to the P5jsAutonomousSim!");
+console.log("To add more cars run:");
+console.log("let myCar = new Car(SteeringDelayMS * 100 / 1000, colorRGB = [50, 50, 250]);");
+console.log("autonomousCars.push(new AutonomousCar(myCar, new AutonomousController(myCar, Carspeed, LookaheadDistance, SteeringGain, DampingGain, SteeringDelayMS / 1000)))");
 
 function setup() {
   createCanvas(windowWidth, windowHeight);

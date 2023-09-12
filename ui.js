@@ -2,7 +2,7 @@
 
 class UI {
   constructor() {
-    this.historySize = 2000;
+    this.historySize = 2500;
     this.graphSplit = 500;
     this.controlPanelSplit = 400;
 
@@ -77,23 +77,55 @@ class Figure{
       Array(this.historySize).fill(0),
       Array(this.historySize).fill(0),
       Array(this.historySize).fill(0),
-      Array(this.historySize).fill(0)
     ]
+    
+    this.cars = []
+    for (let c of autonomousCars) {
+      this.cars.push(c);
+    }
+
     this.graphObject = graphObject;
     this.graphKey = graphKey;
     this.figure = figure;
   }
 
   update() {
-    if(this.graphObject != ''){
-      let i = 0;
+    if(this.graphObject == '')
+      return;
+
+    // update when cars are addedd or removed
+    if(this.cars.length < autonomousCars.length){
       for (let c of autonomousCars) {
-        this.graphHistories[i].push(c[this.graphObject][this.graphKey]);
-        this.graphHistories[i].shift();
-        i++;
-        if(i >= this.graphHistories.length)
-          break;
+        if(this.cars.includes(c))
+          continue;
+        
+        this.cars.push(c);
+        this.graphHistories.push(Array(this.historySize).fill(0));
       }
+    }else if(this.cars.length > autonomousCars.length){
+      for (let c of this.cars) {
+        if(autonomousCars.includes(c))
+          continue;
+        
+        let index = this.cars.indexOf(c);
+        this.cars.splice(index, 1);
+        this.graphHistories.splice(index, 1);
+      }
+    }
+
+
+    let i = 0;
+    for (let c of autonomousCars) {
+      if(c.paused || c.controller.stage == SkidpadStage.FINISH){
+        i++;
+        continue;
+      }
+
+      this.graphHistories[i].push(c[this.graphObject][this.graphKey]);
+      this.graphHistories[i].shift();
+      i++;
+      if(i >= this.graphHistories.length)
+        break;
     }
   }
 
@@ -125,24 +157,7 @@ class Figure{
   }
 
   drawDataFig(title, data, col, min, max) {
-    let fillColor;
-    switch (col) {
-      case 0:
-        fillColor = color(0);
-        break;
-      case 1:
-        fillColor = color(50, 50, 250);
-        break;
-      case 2:
-        fillColor = color(50, 200, 50);
-        break;
-      case 3:
-        fillColor = color(250, 50, 50);
-        break;
-      default:
-        fillColor = color(100, 100, 100);
-        break;
-    }
+    let fillColor = autonomousCars[col-1].car.carcolor;
     
     noStroke();
     fill(fillColor);
@@ -185,17 +200,45 @@ class ControlPanel{
       this.carVisibilities.push(false);
     }
 
+    this.addCarVisible = false;
+    this.addCarSettings = {
+      carSettings:{
+        steeringDelayMS: 10,
+        color: ["color"],
+      },
+      controllerSettings:{
+        carSpeed: 12,
+        lookaheadDistance: 2,
+        steeringGain: 0.2,
+        dampingGain: 0,
+        delayCompensationMS: 0,
+      },
+    }
+    this.addCarSettingDescriptions = {
+      steeringGain: char(7839) + " += steeringGain * (cardir X lookahead)",
+      dampingGain: char(7839) + " += dampingGain * (" + char(7839) + " - " + char(7839) +"(t-1) )",
+      delayCompensationMS: "carpos = carpos + v * delay",
+    }
+
     this.height = height;
   }
 
   draw(){
 
     if(this.show){
+      stroke(0,0,0, 100);
       fill(255, 255, 255, 200);
       rect(0, 0, ui.controlPanelSplit, height);
   
       let y = 100 - this.scrollDist;
       y = this.drawPauseButton(y);
+
+      stroke(0);
+      line(0, y, ui.controlPanelSplit, y);
+      y = this.drawCarAddInterface(y);
+
+      stroke(0);
+      line(0, y, ui.controlPanelSplit, y);
       y = this.drawCarValues(y);
   
       this.height = y + this.scrollDist + 100;
@@ -226,8 +269,11 @@ class ControlPanel{
     fill(0);
     text("Control Panel", 40, 40);
 
-    if(this.mousePressedThisFrame && mouseIntersectsRect(ui.controlPanelSplit - 40, 0, 40, 40))
+    if(this.mousePressedThisFrame && mouseIntersectsRect(ui.controlPanelSplit - 40, 0, 40, 40)){
       this.show = !this.show;
+      if(this.addCarSettings.carSettings.color.length == 2)
+        this.addCarSettings.carSettings.color[1].hide();
+    }
 
     if(!this.show){
       text("V", ui.controlPanelSplit - 40, 40);
@@ -237,11 +283,11 @@ class ControlPanel{
   }
 
   drawPauseButton(y){
-
     // Pause button
     if(this.mousePressedThisFrame && mouseIntersectsRect(40, y, 100, 20))
       simulating = !simulating;
 
+    stroke(0);
     if(simulating){
       fill(0, 255, 0);
       rect(40, y, 100, 20);
@@ -255,11 +301,124 @@ class ControlPanel{
 
       fill(255);
       noStroke();
-      text("Play", 70, y + 15)
+      text("Play", 80, y + 15)
     }
 
 
+    // simulation speed
+    textSize(16);
+    fill(0);
+    text(simulationSpeed + "X", 250, y + 15);
+    if(this.mousePressedThisFrame && mouseIntersectsRect(250, y, 100, 20)){
+      simulationSpeed = simulationSpeed * 2;
+      if(simulationSpeed > 4)
+        simulationSpeed = 0.25;
+    }
+
+
+    return y + 40;
+  }
+
+  drawCarAddInterface(y){
+    let startY = y;
+
+    y += 40;
+
+    if(this.mousePressedThisFrame && mouseIntersectsRect(40, y-40, ui.controlPanelSplit - 40, 60)){
+      this.addCarVisible = !this.addCarVisible;
+      if(this.addCarSettings.carSettings.color.length == 2)
+        this.addCarSettings.carSettings.color[1].hide();
+
+    }
+
+    textSize(24);
+    noStroke();
+    text("Add Car", 40, y);
+    if(!this.addCarVisible){
+      text("V", ui.controlPanelSplit - 40, y);
+      return y + 20;
+    } else{
+      text(char(581), ui.controlPanelSplit - 40, y);
+    }
+    y += 30;
     
+
+
+    // settings
+    for(let i = 0; i < Object.keys(this.addCarSettings).length; i++){
+      let key = Object.keys(this.addCarSettings)[i];
+
+      textSize(18);
+      fill(0);
+      text(key, 40, y + 15);
+      y += 30;
+
+      let settings = this.addCarSettings[key];
+      for(let j = 0; j < Object.keys(settings).length; j++){
+        let sKey = Object.keys(settings)[j];
+
+        textSize(12);
+        fill(0);
+        text(sKey, 40, y + 15);
+
+        let value = settings[sKey];
+
+        if(this.mousePressedThisFrame && mouseIntersectsRect(240, y, 100, 20)){
+          if(typeof value == "number"){
+            let response = prompt("Enter new value for " + sKey, value);
+            if(response != null)
+              settings[sKey] = parseFloat(response);
+          }
+        }
+        stroke(1);
+        fill(255);
+        rect(240, y, 50, 20);
+        noStroke();
+        fill(150);
+        if(sKey in this.addCarSettingDescriptions){
+          text(this.addCarSettingDescriptions[sKey], 15, y + 30);
+        }
+
+        fill(0);
+
+        if(typeof value == "number")
+          text(value, 260, y + 15)
+        else{
+          if(value.length != 2){
+            value.push(createColorPicker(color(255, 0, 0)));
+          }
+          value[1].show();
+          value[1].position(240, y);
+        }
+
+        y += 30;
+      }
+
+    }
+
+    y += 20;
+
+
+
+    if(this.mousePressedThisFrame && mouseIntersectsRect(40, y, 100, 20)){
+      let color = this.addCarSettings.carSettings.color[1].color();
+      let car = new Car(this.addCarSettings.carSettings.steeringDelayMS * 100 / 1000, 
+        [color.levels[0], color.levels[1], color.levels[2]]);
+      autonomousCars.push(new AutonomousCar(
+        car, new AutonomousController(car, 
+          this.addCarSettings.controllerSettings.carSpeed,
+          this.addCarSettings.controllerSettings.lookaheadDistance,
+          this.addCarSettings.controllerSettings.steeringGain,
+          this.addCarSettings.controllerSettings.dampingGain, 
+          this.addCarSettings.controllerSettings.delayCompensationMS / 1000)))
+      this.carVisibilities.push(true);
+    }
+    stroke(1);
+    fill(255, 0, 0);
+    rect(40, y, 100, 20);
+    fill(255);
+    noStroke();
+    text("Add Car", 70, y + 15)
 
     return y + 40;
   }
@@ -271,13 +430,19 @@ class ControlPanel{
 
     noStroke();
 
+    textSize(24);
+    fill(0);
+    y += 20;
+    text("Cars", 40, y + 15);
+    y += 30;
+
     let i = 1;
     for(let car of autonomousCars){
       // Car header
-      textSize(20);
+      textSize(16);
       y += 20;
       fill(car.car.carcolor[0], car.car.carcolor[1], car.car.carcolor[2]);
-      text("Car " + i + " :  " + car.controller.veltot.toFixed(2) + " [m/s]  " + (car.controller.stage == SkidpadStage.FINISH ? "Finish" : (car.controller.progress * 100).toFixed(2) + "%"), 40, y);
+      text("Car " + i + " :  " + car.controller.veltot.toFixed(2) + " [m/s]  " + (car.controller.stage == SkidpadStage.FINISH ? "Finished" : (car.controller.progress * 100).toFixed(2) + "%"), 40, y);
       i++;
       y += 20;
 

@@ -72,10 +72,11 @@ let SkidpadStage = {
       this.lookaheadpoint = this.calculateLookaheadPoint(this.lookaheadDistance);
       let lookaheaddriection = this.lookaheadpoint.copy().sub(this.expectedCarPos);
       let steeringP = -lookaheaddriection.cross(this.controlledCar.heading).z * this.steeringGain;
+      
       let d = max(min((steeringP - this.oldSteeringP) / dt, 0.2), -0.2);
       this.oldSteeringP = steeringP;
 
-      this.stearingAngle = (steeringP + d * this.dGain) / (this.veltot + 1);
+      this.stearingAngle = (steeringP + d * this.dGain);
       this.stearingAngle = min(max(this.stearingAngle, -this.controlledCar.maxStearingAngle), this.controlledCar.maxStearingAngle);
   
       this.controlledCar.setSetpoints(this.stearingAngle, this.force);

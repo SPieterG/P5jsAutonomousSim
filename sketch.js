@@ -1,7 +1,6 @@
 console.log("Welcome to the P5jsAutonomousSim!");
-console.log("To add more cars run:");
-console.log("let myCar = new Car(SteeringDelayMS * 100 / 1000, colorRGB = [50, 50, 250]);");
-console.log("autonomousCars.push(new AutonomousCar(myCar, new AutonomousController(myCar, Carspeed, LookaheadDistance, SteeringGain, DampingGain, SteeringDelayMS / 1000)))");
+console.log("To perform ofline grid search run the following code in the console:");
+console.log("optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [2, 2.5, 3], steeringGainRange = [2, 3, 4], dGainRange = [0, 0.5, 1, 2, 5], delayCompensationRange = [50])");
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -11,15 +10,15 @@ function setup() {
 
   let car1 = new Car(50 * 100 / 1000, [50, 50, 250]);
   autonomousCars.push(new AutonomousCar(
-    car1, new AutonomousController(car1, 20, 2, 4, 0, 0 / 1000)))
+    car1, new AutonomousController(car1, 12, 2, 0.2, 0, 0 / 1000)))
 
   let car2 = new Car(50 * 100 / 1000, [50, 200, 50]);
   autonomousCars.push(new AutonomousCar(
-    car2, new AutonomousController(car2, 20, 2.5, 4, 0, 50 / 1000)))
+    car2, new AutonomousController(car2, 12, 2.5, 0.2, 0, 50 / 1000)))
 
   let car3 = new Car(50 * 100 / 1000, [250, 50, 50]);
   autonomousCars.push(new AutonomousCar(
-    car3, new AutonomousController(car3, 20, 2.5, 4, 0, 100 / 1000)))
+    car3, new AutonomousController(car3, 12, 2.5, 0.2, 0, 100 / 1000)))
 
   // // Uncomment to add manual car
   // let car4 = new Car(100 * 120 / 1000, [100, 100, 100]);
@@ -46,7 +45,7 @@ function draw() {
         c.update(1.0 / 100);
       }
 
-      simulationTime += 1000.0 / 100;
+      simulationTime += 1000.0 / 100 / simulationSpeed;
       ui.update();
     }
   } else {

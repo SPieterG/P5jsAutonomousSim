@@ -20,10 +20,10 @@ Following features have been implemented / are still to be implemented. Current 
 - [x] Graphs displaying arbitrary value history
 - [x] Multi car support
 - [x] Simulating steering latancy
-- [ ] Interface for initializing cars and their parameters 
+- [X] Interface for initializing cars and their parameters 
 - [x] Interface for selecting whats displayed on the graphs
 - [x] simulating a full skidpad run offscreen and recording the loss determined by distance from the center line and rate of turn of the steering wheel
-- [ ] Performing an offline gridsearch over controller parameters
+- [X] Performing an offline gridsearch over controller parameters (Open the debug console to call the function)
 - [ ] Visualzing the controller performance over the parameter space with some 2d graphs containing coloured dots
 - [ ] Interface for configuring sensor bias, noise and latancy
 - [ ] full body vehicle physics or at the very least some sort of sideslip or drifting

@@ -93,6 +93,24 @@ class Figure{
     if(this.graphObject == '')
       return;
 
+    this.updateCarCount();
+
+    let i = 0;
+    for (let c of autonomousCars) {
+      if(c.paused || c.controller.stage == SkidpadStage.FINISH){
+        i++;
+        continue;
+      }
+
+      this.graphHistories[i].push(c[this.graphObject][this.graphKey]);
+      this.graphHistories[i].shift();
+      i++;
+      if(i >= this.graphHistories.length)
+        break;
+    }
+  }
+
+  updateCarCount(){
     // update when cars are addedd or removed
     if(this.cars.length < autonomousCars.length){
       for (let c of autonomousCars) {
@@ -112,21 +130,6 @@ class Figure{
         this.graphHistories.splice(index, 1);
       }
     }
-
-
-    let i = 0;
-    for (let c of autonomousCars) {
-      if(c.paused || c.controller.stage == SkidpadStage.FINISH){
-        i++;
-        continue;
-      }
-
-      this.graphHistories[i].push(c[this.graphObject][this.graphKey]);
-      this.graphHistories[i].shift();
-      i++;
-      if(i >= this.graphHistories.length)
-        break;
-    }
   }
 
   setValue(graphObject, graphKey){
@@ -136,15 +139,15 @@ class Figure{
     this.graphObject = graphObject;
     this.graphKey = graphKey;
 
-    this.graphHistories = [
-      Array(this.historySize).fill(0),
-      Array(this.historySize).fill(0),
-      Array(this.historySize).fill(0),
-      Array(this.historySize).fill(0)
-    ]
+    this.graphHistories = []
+    for(let c of this.cars){
+      this.graphHistories.push(Array(this.historySize).fill(0))
+    }
   }
 
   draw() {
+    this.updateCarCount();
+
     let min2 = Infinity;
     let max2 = -Infinity;
     for(let history of this.graphHistories){
@@ -312,7 +315,7 @@ class ControlPanel{
     if(this.mousePressedThisFrame && mouseIntersectsRect(250, y, 100, 20)){
       simulationSpeed = simulationSpeed * 2;
       if(simulationSpeed > 4)
-        simulationSpeed = 0.25;
+        simulationSpeed = 0.25 / 4;
     }
 
 

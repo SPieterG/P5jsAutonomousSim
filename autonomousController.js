@@ -26,6 +26,8 @@ let SkidpadStage = {
       this.expectedCarPos = createVector(0, 0);
       this.deviationIntegral = 0;
 
+      this.pathPoint = createVector(0, 0);
+
       this.oldSteeringP = 0;
 
       this.drawController = false;
@@ -39,6 +41,7 @@ let SkidpadStage = {
       this.deviationIntegral = 0;
       this.oldSteeringP = 0;
       this.lookaheadpoint = createVector(0, 0);
+      this.pathPoint = createVector(0, 0);
       this.expectedCarPos = createVector(0, 0);
 
     }
@@ -49,8 +52,6 @@ let SkidpadStage = {
       if (this.worldAngle < 0) {
         this.worldAngle += 2 * PI;
       }
-  
-      this.updateStateProgress(dt);
   
       // Go to traget speed during skidpad with fuzzy logic
       if (this.stage !== SkidpadStage.STOPPING && this.stage !== SkidpadStage.FINISH) {
@@ -64,10 +65,9 @@ let SkidpadStage = {
         this.force = -3080;
       }
   
-      this.expectedCarPos = this.controlledCar.pos.copy();
-      let carV = this.controlledCar.heading.copy();
-      carV.mult(this.delayCompensation * this.controlledCar.velocity.x);
-      this.expectedCarPos.add(carV);
+
+      this.calculateExpectedCarPos(dt); // this.expectedCarPos
+      this.updateStateProgress(dt); // this.pathPosition, this.progress, this.deviationFromPath, this.pathPoint, this.stage
   
       this.lookaheadpoint = this.calculateLookaheadPoint(this.lookaheadDistance);
       let lookaheaddriection = this.lookaheadpoint.copy().sub(this.expectedCarPos);
@@ -80,6 +80,8 @@ let SkidpadStage = {
       this.stearingAngle = min(max(this.stearingAngle, -this.controlledCar.maxStearingAngle), this.controlledCar.maxStearingAngle);
   
       this.controlledCar.setSetpoints(this.stearingAngle, this.force);
+
+      
     }
   
     draw() {
@@ -91,7 +93,15 @@ let SkidpadStage = {
       circle(wm.tX(this.lookaheadpoint.x), wm.tY(this.lookaheadpoint.y), 30);
       fill(0, 0, 250);
       circle(wm.tX(this.expectedCarPos.x), wm.tY(this.expectedCarPos.y), 20);
-  
+      fill(0, 250, 0);
+      // circle(wm.tX(this.path[this.pathPosition].x), wm.tY(this.path[this.pathPosition].y), 20);
+      circle(wm.tX(this.pathPoint.x), wm.tY(this.pathPoint.y), 20);
+
+      fill(250, 50, 250);
+      circle(wm.tX(this.path[this.pathPosition].x), wm.tY(this.path[this.pathPosition].y), 10);
+      circle(wm.tX(this.path[this.pathPosition + 1].x), wm.tY(this.path[this.pathPosition + 1].y), 10);
+
+
       for (let i = 0; i < this.path.length; i++) {
         let p = this.path[i];
         if (this.pathPosition > i)
@@ -111,6 +121,73 @@ let SkidpadStage = {
       endShape();
     }
   
+   /**
+   * Uses:
+   * - this.delayCompensation set by user
+   * - current position
+   * - current heading
+   * - current velocity
+   * - (current steering)
+   * Calculates:
+   * - this.expectedCarPos
+   */
+    calculateExpectedCarPos(dt){
+      let localX = 0;
+      let localY = 0;
+      let R = 1 / (tan(this.controlledCar.stearingAngle) * cos(this.controlledCar.sideslip) / this.controlledCar.wheelbase);
+      
+      if(this.drawController){
+        fill(50, 50, 50);
+        circle(wm.tX(this.controlledCar.pos.x), wm.tY(this.controlledCar.pos.y), 10);
+
+        for(let i = 1; i < 10; i++){
+          let dist = this.controlledCar.velocity.x * this.delayCompensation * i;
+          if(Math.abs(R) < 0.0001)
+            R = 0.0001;
+          let theta = dist / R;
+          
+          localX = R * sin(theta);
+          localY = R * (1 - cos(theta));
+    
+          this.expectedCarPos = this.controlledCar.pos.copy();
+          let ofset = createVector(localX, localY);
+          ofset.rotate(this.controlledCar.heading.heading() + this.controlledCar.sideslip);
+          this.expectedCarPos.add(ofset)
+
+          fill(150, 50, 50);
+          circle(wm.tX(this.expectedCarPos.x), wm.tY(this.expectedCarPos.y), 10);
+        }
+      }
+
+      let dist = this.controlledCar.velocity.x * this.delayCompensation;
+      if(Math.abs(R) < 0.0001)
+        R = 0.0001;
+      let theta = dist / R;
+      
+      localX = R * sin(theta);
+      localY = R * (1 - cos(theta));
+
+      this.expectedCarPos = this.controlledCar.pos.copy();
+      let ofset = createVector(localX, localY);
+      ofset.rotate(this.controlledCar.heading.heading() + this.controlledCar.sideslip);
+      this.expectedCarPos.add(ofset)
+
+      /* Expected car position without steering */
+      // this.expectedCarPos = this.controlledCar.pos.copy();
+      // let carV = this.controlledCar.heading.copy();
+      // carV.mult(this.delayCompensation * this.controlledCar.velocity.x);
+      // this.expectedCarPos.add(carV);
+    }
+
+    /**
+     * Uses:
+     * - lookaheadDistance (method argument)
+     * - this.path
+     * - this.pathPosition
+     * - this.expectedCarPos
+     * Returns:
+     * - lookaheadpoint
+     */
     calculateLookaheadPoint(lookAheadDist) {
       let currentPoint = this.path[this.pathPosition];
       let nextPoint = this.path[this.pathPosition + 1];
@@ -137,6 +214,17 @@ let SkidpadStage = {
       return this.path[this.path.length - 1];
     }
   
+    /**
+     * Uses:
+     * - this.path
+     * - this.expectedCarPos
+     * Calculates:
+     * - this.pathPosition
+     * - this.progress
+     * - this.deviationFromPath
+     * - this.pathPoint
+     * - this.stage
+     */
     updateStateProgress(dt = 1/100) {
       for (let i = this.pathPosition; i < this.path.length - 1; i++) {
         let currentPoint = this.path[i];
@@ -145,9 +233,11 @@ let SkidpadStage = {
         let pointToLineStart = p5.Vector.sub(this.expectedCarPos, currentPoint);
         let t = pointToLineStart.dot(lineDirection) / lineDirection.mag();
 
-                                                                                                            // correction factor as the car will also be steering a bit, should work out the actual trig but by that point we might as well implement mpc
-        this.deviationFromPath = pointToLineStart.dot(lineDirection.rotate(PI / 2)) / lineDirection.magSq() + this.controlledCar.stearingAngle * this.veltot * dt * 10;
-  
+        this.pathPoint = currentPoint.copy();
+        this.pathPoint.add(lineDirection.mult(t / lineDirection.mag()));
+
+        this.deviationFromPath = this.pathPoint.dist(this.expectedCarPos) * Math.sign(pointToLineStart.dot(lineDirection.rotate(PI / 2)))
+
         if (t < 0) {
           this.pathPosition = i;
           break;

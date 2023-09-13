@@ -54,6 +54,7 @@ class Car {
       this.maxStearingAngleZero = 0.2;
   
       this.carcolor = carcolor;
+      this.sideslip = 0;
 
       this.steeringDelaySteps = newSteeringDelay;
   
@@ -133,13 +134,13 @@ class Car {
       this.acc.x = (this.force - this.velocity.x * this.velocity.x * this.CdA * 1.21 / 2 - this.velocity.x * 10) / this.mass;
       this.velocity.x += this.acc.x * dt;
   
-      let sideslip = atan((1 - this.cog) * tan(this.stearingAngle));
+      this.sideslip = atan((1 - this.cog) * tan(this.stearingAngle));
 
-      let dx = this.velocity.x * cos(this.heading.heading() + sideslip) * dt;
-      let dy = this.velocity.x * sin(this.heading.heading() + sideslip) * dt;
+      let dx = this.velocity.x * cos(this.heading.heading() + this.sideslip) * dt;
+      let dy = this.velocity.x * sin(this.heading.heading() + this.sideslip) * dt;
       this.pos.x += dx;
       this.pos.y += dy;
-      this.gyro_z = this.velocity.x * tan(this.stearingAngle) * cos(sideslip) / this.wheelbase;
+      this.gyro_z = this.velocity.x * tan(this.stearingAngle) * cos(this.sideslip) / this.wheelbase;
       this.heading.rotate(this.gyro_z * dt);
     }
   

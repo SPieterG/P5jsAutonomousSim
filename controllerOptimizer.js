@@ -16,7 +16,9 @@ function optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20
                 for(let steeringGain of steeringGainRange){
                     for(let dGain of dGainRange){
                         for(let delayCompensation of delayCompensationRange){
-                            testController(carSteeringLatancy, carspeed, lookaheadDistance, steeringGain, dGain, delayCompensation).then((result) => console.log(result));
+                            setTimeout(()=>{
+                                testController(carSteeringLatancy, carspeed, lookaheadDistance, steeringGain, dGain, delayCompensation).then((result) => console.log(result))
+                            }, 0);
                         }
                     }
                 }

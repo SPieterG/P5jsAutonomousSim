@@ -39,6 +39,21 @@ Following features have been implemented / are still to be implemented. Current 
 
 The main game loop is being run in `sketch.js`, a collection of global objects are being used througt the project kept in `globals.js`.
 
+```
+.
+├── autonomousController.js (Contains all code for the vehicle control)
+├── carModel.js (Contains code for the vehicle physics)
+├── cone.js
+├── coneMap.js
+├── controllerOptimizer.js (Contains code to grid seach the best controller)
+├── globals.js (Contains global variables)
+├── index.html
+├── manualController.js (Contains a controller to controll the car by hand)
+├── sketch.js (Main js file with setup and render loop)
+└── ui.js (Contains all ui rendering)
+```
+
+
 ## Classes in the Project
 
 The project consists of several classes, each serving a specific role in the car simulation. Here's an overview of the main classes:

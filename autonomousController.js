@@ -262,7 +262,7 @@ let SkidpadStage = {
       }
 
       // Determin the point on the path closest to the front axcel and calculate the cross track error
-      for (let i = this.pathPosition; i < this.path.length - 1; i++) {
+      for (let i = this.pathPosition - 1; i < this.path.length - 1; i++) {
         let currentPoint = this.path[i];
         let nextPoint = this.path[i + 1];
         let lineDirection = p5.Vector.sub(nextPoint, currentPoint);
@@ -270,24 +270,21 @@ let SkidpadStage = {
         let t = pointToLineStart.dot(lineDirection) / lineDirection.mag();
 
         if (t < 0) {
-          this.frontAxcelPathPoint = currentPoint.copy();
-          this.frontAxcelPathPoint.add(lineDirection.mult(t / lineDirection.mag()));
 
           // Calculate the heading of the path at the front axcel (use linear interpolation between the heading of the current point and the previous point)
-          let pathHeadingPrevious = p5.Vector.sub(this.path[i-1], currentPoint);
+          let pathHeadingPrevious = p5.Vector.sub(currentPoint, this.path[i-1]);
           let scaleFactor = -t / pathHeadingPrevious.mag();
           this.frontAxcelPathHeading = lineDirection.copy();
           this.frontAxcelPathHeading.normalize();
           pathHeadingPrevious.normalize();
           this.frontAxcelPathHeading.lerp(pathHeadingPrevious, scaleFactor);
-          this.frontAxcelPathHeading.rotate(PI);
-
-          this.crossTrackError = this.frontAxcelPathPoint.dist(this.expectedFrontAxcelPos) * Math.sign(pointToLineStart.dot(lineDirection.rotate(PI / 2)))
-
-
-
           break;
         }
+
+        this.frontAxcelPathPoint = currentPoint.copy();
+        this.frontAxcelPathPoint.add(lineDirection.mult(t / lineDirection.mag()));
+        this.crossTrackError = -this.frontAxcelPathPoint.dist(this.expectedFrontAxcelPos) * Math.sign(pointToLineStart.dot(lineDirection.rotate(PI / 2)))
+
       }
 
 

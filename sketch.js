@@ -23,7 +23,7 @@ function setup() {
     
   let car4 = new Car(50 * 100 / 1000, [50, 50, 50]);
   autonomousCars.push(new AutonomousCar(
-    car4, new AutonomousController(car4, 12, 2.5, 0, 0, 1, 1, 0.5, 0.5, 50 / 1000)))
+    car4, new AutonomousController(car4, 12, 2.5, 0, 0, 1, 2, 0.5, 0.5, 50 / 1000)))
 
   // // Uncomment to add manual car
   // let car4 = new Car(100 * 120 / 1000, [100, 100, 100]);

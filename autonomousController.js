@@ -25,7 +25,7 @@ let SkidpadStage = {
       this.veltot = 0;
       this.worldAngle = 0;
       this.path = this.getSkidpadPath();
-      this.pathPosition = 0;
+      this.pathPosition = 2;
       this.lookaheadpoint = createVector(0, 0);
 
       this.deviationFromPath = 0;  // Distance from the path to the (expected) car cog
@@ -53,7 +53,7 @@ let SkidpadStage = {
     reset(){
       this.stage = SkidpadStage.STARTING;
       this.progress = 0;
-      this.pathPosition = 0;
+      this.pathPosition = 2;
       this.deviationFromPath = 0;
       this.deviationIntegral = 0;
       this.oldSteeringP = 0;
@@ -110,7 +110,7 @@ let SkidpadStage = {
       + d * this.dGain 
       + this.stanlyCrosstrackGain * this.yaw_diff_crosstrack 
       + this.stanlyHeadingGain * this.headingError;
-      
+
     this.stearingAngle = min(max(this.stearingAngle, -this.controlledCar.maxStearingAngle), this.controlledCar.maxStearingAngle);
 
     this.controlledCar.setSetpoints(this.stearingAngle, this.force);
@@ -242,22 +242,23 @@ let SkidpadStage = {
      */
     updateStateProgress(dt = 1/100) {
       // Determin the point on the path closest to the (expected) car cog
-      for (let i = this.pathPosition; i < this.path.length - 1; i++) {
+      for (let i = this.pathPosition - 1; i < this.path.length - 1; i++) {
         let currentPoint = this.path[i];
         let nextPoint = this.path[i + 1];
         let lineDirection = p5.Vector.sub(nextPoint, currentPoint);
         let pointToLineStart = p5.Vector.sub(this.expectedCarPos, currentPoint);
         let t = pointToLineStart.dot(lineDirection) / lineDirection.mag();
 
+        if (t < 0) {
+          if(i > 2)
+            this.pathPosition = i - 1;
+          break;
+        }
+
         this.pathPoint = currentPoint.copy();
         this.pathPoint.add(lineDirection.mult(t / lineDirection.mag()));
 
         this.deviationFromPath = this.pathPoint.dist(this.expectedCarPos) * Math.sign(pointToLineStart.dot(lineDirection.rotate(PI / 2)))
-
-        if (t < 0) {
-          this.pathPosition = i;
-          break;
-        }
       }
 
       // Determin the point on the path closest to the front axcel and calculate the cross track error
@@ -268,16 +269,23 @@ let SkidpadStage = {
         let pointToLineStart = p5.Vector.sub(this.expectedFrontAxcelPos, currentPoint);
         let t = pointToLineStart.dot(lineDirection) / lineDirection.mag();
 
-        this.frontAxcelPathPoint = currentPoint.copy();
-        this.frontAxcelPathPoint.add(lineDirection.mult(t / lineDirection.mag()));
-
-        this.frontAxcelPathHeading = lineDirection.copy();
-        this.frontAxcelPathHeading.normalize();
-        this.frontAxcelPathHeading.rotate(PI);
-
-        this.crossTrackError = this.frontAxcelPathPoint.dist(this.expectedFrontAxcelPos) * Math.sign(pointToLineStart.dot(lineDirection.rotate(PI / 2)))
-
         if (t < 0) {
+          this.frontAxcelPathPoint = currentPoint.copy();
+          this.frontAxcelPathPoint.add(lineDirection.mult(t / lineDirection.mag()));
+
+          // Calculate the heading of the path at the front axcel (use linear interpolation between the heading of the current point and the previous point)
+          let pathHeadingPrevious = p5.Vector.sub(this.path[i-1], currentPoint);
+          let scaleFactor = -t / pathHeadingPrevious.mag();
+          this.frontAxcelPathHeading = lineDirection.copy();
+          this.frontAxcelPathHeading.normalize();
+          pathHeadingPrevious.normalize();
+          this.frontAxcelPathHeading.lerp(pathHeadingPrevious, scaleFactor);
+          this.frontAxcelPathHeading.rotate(PI);
+
+          this.crossTrackError = this.frontAxcelPathPoint.dist(this.expectedFrontAxcelPos) * Math.sign(pointToLineStart.dot(lineDirection.rotate(PI / 2)))
+
+
+
           break;
         }
       }
@@ -316,6 +324,13 @@ let SkidpadStage = {
       circle(wm.tX(this.pathPoint.x), wm.tY(this.pathPoint.y), 2 * wm.scaleW2S(this.deviationFromPath));
       circle(wm.tX(this.frontAxcelPathPoint.x), wm.tY(this.frontAxcelPathPoint.y), 2 * wm.scaleW2S(this.crossTrackError));
 
+      let headingPoint = this.frontAxcelPathHeading.copy();
+      headingPoint.mult(5);
+      headingPoint.add(this.frontAxcelPathPoint)
+      strokeWeight(2);
+      line(wm.tX(this.frontAxcelPathPoint.x), wm.tY(this.frontAxcelPathPoint.y), wm.tX(headingPoint.x), wm.tY(headingPoint.y));
+
+      strokeWeight(1);
 
       noStroke();
       fill(250, 50, 250);
@@ -354,7 +369,7 @@ let SkidpadStage = {
 
       let pathStep = 0.3;
   
-      for (let i = 0; i < 15; i+=pathStep) {
+      for (let i = -1; i < 15; i+=pathStep) {
         path.push(createVector(0, i));
       }
   

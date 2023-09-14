@@ -6,19 +6,25 @@ function loss(deviation, currentSteeringAngle, perviousSteeringAngle) {
     return deviationFactor * deviation * deviation + stabilityFactor * (currentSteeringAngle - perviousSteeringAngle) * (currentSteeringAngle - perviousSteeringAngle);
 }
 
-// optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [2, 2.5, 3], steeringGainRange = [2, 3, 4], dGainRange = [0, 0.5, 1, 2, 5], delayCompensationRange = [50])
+// optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [2, 2.5, 3], steeringGainRange = [2, 3, 4], dGainRange = [0, 0.5, 1, 2, 5], stanlyCrosstrackGainRange = [0], stanlyHeadingGainRange = [0], stanly_KeRange = [1], stanly_KvRange = [1], delayCompensationRange = [50])
 
-function optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [3.6], steeringGainRange = [6], dGainRange = [0, 0.01, 0.02, 0.05, 0.1], delayCompensationRange = [50]) {
+function optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [3.6], steeringGainRange = [6], dGainRange = [0, 0.01, 0.02, 0.05, 0.1], stanlyCrosstrackGainRange = [0], stanlyHeadingGainRange = [0], stanly_KeRange = [1], stanly_KvRange = [1], delayCompensationRange = [50]) {
 
     for(let carSteeringLatancy of carSteeringLatancyRange){
         for(let carspeed of carspeedRange){
             for(let lookaheadDistance of lookaheadDistanceRange){
                 for(let steeringGain of steeringGainRange){
                     for(let dGain of dGainRange){
-                        for(let delayCompensation of delayCompensationRange){
-                            setTimeout(()=>{
-                                testController(carSteeringLatancy, carspeed, lookaheadDistance, steeringGain, dGain, delayCompensation).then((result) => console.log(result))
-                            }, 0);
+                        for(let stanlyCrosstrackGain of stanlyCrosstrackGainRange){
+                            for(let stanlyHeadingGain of stanlyHeadingGainRange){
+                                for(let stanly_Ke of stanly_KeRange){
+                                    for(let stanly_Kv of stanly_KvRange){
+                                        for(let delayCompensation of delayCompensationRange){
+                                            setTimeout(()=>{testController(carSteeringLatancy, carspeed, lookaheadDistance, steeringGain, dGain, stanlyCrosstrackGain, stanlyHeadingGain, stanly_Ke, stanly_Kv, delayCompensation).then((result) => console.log(result))}, 0);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -30,11 +36,11 @@ function optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20
 }
 
 
-async function testController(carSteeringLatancy, carspeed, lookaheadDistance, steeringGain, dGain, delayCompensation) {
+async function testController(carSteeringLatancy, carspeed, lookaheadDistance, steeringGain, dGain, stanlyCrosstrackGain, stanlyHeadingGain, stanly_Ke, stanly_Kv, delayCompensation) {
     let simulationFrequency = 100;
 
     let car = new Car(carSteeringLatancy * simulationFrequency / 1000, [50, 50, 250]);
-    let controller = new AutonomousController(car, carspeed, lookaheadDistance, steeringGain, dGain, delayCompensation / 1000);
+    let controller = new AutonomousController(car, carspeed, lookaheadDistance, steeringGain, dGain, stanlyCrosstrackGain, stanlyHeadingGain, stanly_Ke, stanly_Kv, delayCompensation / 1000);
     
     let carLoss = simulateCar(car, controller, 1.0 / simulationFrequency, 2000);
 

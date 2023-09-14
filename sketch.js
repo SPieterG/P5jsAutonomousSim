@@ -1,6 +1,6 @@
 console.log("Welcome to the P5jsAutonomousSim!");
 console.log("To perform ofline grid search run the following code in the console:");
-console.log("optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [2, 2.5, 3], steeringGainRange = [2, 3, 4], dGainRange = [0, 0.5, 1, 2, 5], delayCompensationRange = [50])");
+console.log("optimizerGridSearch(carSteeringLatancyRange = [50], carspeedRange = [20], lookaheadDistanceRange = [2, 2.5, 3], steeringGainRange = [2, 3, 4], dGainRange = [0, 0.5, 1, 2, 5], stanlyCrosstrackGainRange = [0], stanlyHeadingGainRange = [0], stanly_KeRange = [1], stanly_KvRange = [1], delayCompensationRange = [50])");
 
 function setup() {
   createCanvas(windowWidth, windowHeight);

@@ -73,16 +73,9 @@ class Figure{
 
   constructor(historySize = 3000, graphObject, graphKey, figure){
     this.historySize = historySize;
-    this.graphHistories = [
-      Array(this.historySize).fill(0),
-      Array(this.historySize).fill(0),
-      Array(this.historySize).fill(0),
-    ]
-    
+    this.graphHistories = []
     this.cars = []
-    for (let c of autonomousCars) {
-      this.cars.push(c);
-    }
+    this.updateCarCount();
 
     this.graphObject = graphObject;
     this.graphKey = graphKey;
@@ -214,12 +207,20 @@ class ControlPanel{
         lookaheadDistance: 2,
         steeringGain: 0.2,
         dampingGain: 0,
+        stanlyCrosstrackGain: 0,
+        stanlyHeadingGain: 0,
+        stanly_Ke: 1,
+        stanly_Kv: 0.1,
         delayCompensationMS: 0,
       },
     }
     this.addCarSettingDescriptions = {
       steeringGain: char(7839) + " += steeringGain * (cardir X lookahead)",
       dampingGain: char(7839) + " += dampingGain * (" + char(7839) + " - " + char(7839) +"(t-1) )",
+      stanlyCrosstrackGain: char(7839) + " += stanlyCrosstrackGain * yaw_diff_crosstrack",
+      stanlyHeadingGain: char(7839) + " += stanlyHeadingGain * headingError",
+      stanly_Ke: "yaw_diff_crosstrack = atan(stanly_Ke * cTError ...",
+      stanly_Kv: " ... / (stanly_Kv + v))",
       delayCompensationMS: "carpos = carpos + v * delay",
     }
 
@@ -375,7 +376,7 @@ class ControlPanel{
         }
         stroke(1);
         fill(255);
-        rect(240, y, 50, 20);
+        rect(ui.controlPanelSplit - 97, y, 50, 20);
         noStroke();
         fill(150);
         if(sKey in this.addCarSettingDescriptions){
@@ -385,13 +386,13 @@ class ControlPanel{
         fill(0);
 
         if(typeof value == "number")
-          text(value, 260, y + 15)
+          text(value, ui.controlPanelSplit - 80, y + 15)
         else{
           if(value.length != 2){
             value.push(createColorPicker(color(255, 0, 0)));
           }
           value[1].show();
-          value[1].position(240, y);
+          value[1].position(ui.controlPanelSplit - 97, y);
         }
 
         y += 30;
@@ -400,8 +401,6 @@ class ControlPanel{
     }
 
     y += 20;
-
-
 
     if(this.mousePressedThisFrame && mouseIntersectsRect(40, y, 100, 20)){
       let color = this.addCarSettings.carSettings.color[1].color();
@@ -412,7 +411,11 @@ class ControlPanel{
           this.addCarSettings.controllerSettings.carSpeed,
           this.addCarSettings.controllerSettings.lookaheadDistance,
           this.addCarSettings.controllerSettings.steeringGain,
-          this.addCarSettings.controllerSettings.dampingGain, 
+          this.addCarSettings.controllerSettings.dampingGain,
+          this.addCarSettings.controllerSettings.stanlyCrosstrackGain, 
+          this.addCarSettings.controllerSettings.stanlyHeadingGain, 
+          this.addCarSettings.controllerSettings.stanly_Ke, 
+          this.addCarSettings.controllerSettings.stanly_Kv,
           this.addCarSettings.controllerSettings.delayCompensationMS / 1000)))
       this.carVisibilities.push(true);
     }

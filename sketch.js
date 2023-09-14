@@ -10,15 +10,20 @@ function setup() {
 
   let car1 = new Car(50 * 100 / 1000, [50, 50, 250]);
   autonomousCars.push(new AutonomousCar(
-    car1, new AutonomousController(car1, 12, 2, 0.2, 0, 0 / 1000)))
+    car1, new AutonomousController(car1, 12, 2, 0.2, 0, 0, 0, 1, 1, 0 / 1000)))
 
   let car2 = new Car(50 * 100 / 1000, [50, 200, 50]);
   autonomousCars.push(new AutonomousCar(
-    car2, new AutonomousController(car2, 12, 2.5, 0.2, 0, 50 / 1000)))
+    car2, new AutonomousController(car2, 12, 2.5, 0.2, 0, 0, 0, 1, 1, 50 / 1000)))
 
   let car3 = new Car(50 * 100 / 1000, [250, 50, 50]);
   autonomousCars.push(new AutonomousCar(
-    car3, new AutonomousController(car3, 12, 2.5, 0.2, 0, 100 / 1000)))
+    car3, new AutonomousController(car3, 12, 2.5, 0.2, 0, 0, 0, 1, 1, 100 / 1000)))
+  
+    
+  let car4 = new Car(50 * 100 / 1000, [50, 50, 50]);
+  autonomousCars.push(new AutonomousCar(
+    car4, new AutonomousController(car4, 12, 2.5, 0, 0, 1, 1, 0.5, 0.5, 50 / 1000)))
 
   // // Uncomment to add manual car
   // let car4 = new Car(100 * 120 / 1000, [100, 100, 100]);
